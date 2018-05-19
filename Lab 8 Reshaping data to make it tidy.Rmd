@@ -1,0 +1,72 @@
+---
+title: 'Lab 8: Reshaping data to make it "tidy'
+author: "Jesus Martinez"
+date: "5/19/2018"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+
+```
+
+```{r}
+indicator <- read_csv("~/stats209-project-2/lab8_indicator.csv")
+
+indicator
+```
+```{r}
+indicator<- indicator %>% rename(country = `Total above 15 employment to population (%)`)
+indicator
+
+```
+
+
+```{r}
+indicator%>% dim()
+?gather
+```
+```{r}
+data_set<-indicator %>% gather(-country, key="Year", value= "percent", convert=TRUE, na.rm =TRUE)
+?parse_number
+```
+
+```{r}
+data_set <- data_set %>% mutate(parse_number(Year), parse_number(percent))
+data_set
+```
+
+#This was limited to these countries for the sake of clarity in the graph
+```{r}
+country_list <- c("Afghanistan","Australia","Japan")
+plot1<- data_set %>% filter(country %in% country_list) %>% ggplot(aes(x=Year, y= percent)) + geom_jitter(aes(color=country)) + ggtitle("Unemployment Rate for Active Work Force")
+plot1
+```
+
+
+
+-----------------------------------------FOR CREDIT--------------------------------------------------------------------------------------
+*Post your graph from Exercise 8 to the #lab8 channel.Answer the following via DM to me: If you got stuck somewhere along the way doing this lab, where was it? What did you do to get unstuck? If you didn’t get stuck, what part of this process did you find the most difficult?*
+
+Yes I got stuck transforming the years from a string of characters to a string of numbers; this lead to confusing errors when I tried to graph my pot. It seemed like every country got their own time series graph.
+
+```{r}
+library(tidyverse)
+library(readr)
+Lab_8 <- read_csv("~/Git Folder/HW 4/Lab 8.csv")
+#View(Lab_8)
+
+Lab_8<- Lab_8 %>% rename(country = `Estimated HIV Prevalence% - (Ages 15-49)`)
+
+newdata <- Lab_8 %>% gather( key = "Year", value = "Cases", -country)
+head(newdata)
+#dim(newdata)
+
+newdata<- newdata %>% mutate(Year1 = parse_number(Year))
+
+hiv_plot <- newdata %>% ggplot(aes(x = Year1, y = Cases, color= country))+geom_point()####I am still having trouble displaying this###
+
+hiv_plot
+```

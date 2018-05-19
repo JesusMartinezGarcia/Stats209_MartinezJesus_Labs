@@ -1,0 +1,107 @@
+---
+title: "Lab 9 Function and Iterations"
+author: "Jesus Martinez"
+date: "5/19/2018"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(babynames)
+data(babynames)    ## SSA data
+data(births)
+```
+#Creating my first function
+```{r}
+most_popular_year <- function(name_arg) 
+{
+  babynames %>%
+    filter(name == name_arg) %>%
+    group_by(year) %>%
+    summarize(
+      name               = name[1], 
+      overall_percentage = 100 * sum(0.5 * prop)
+      ) %>%
+    arrange(desc(overall_percentage)) %>%
+    head(1) %>%
+    select(name, year, overall_percentage)
+}
+````
+#Default Arguments
+```{r}
+most_popular_years <- function(name_arg, num_years) 
+{
+  babynames %>%
+    filter(name == name_arg) %>%
+    group_by(year) %>%
+    summarize(
+      name               = name[1], 
+      overall_percentage = 100 * sum(0.5 * prop)
+      ) %>%
+    arrange(desc(overall_percentage)) %>%
+    head(n = num_years) %>%
+    select(name, year, overall_percentage)
+}
+```
+#Iterations
+```{r}
+my_name_list <- c("Colin", "Megan", "Bruce", "Mary", "Arlo", "Esai")
+lapply(my_name_list, FUN = most_popular_year)
+
+lapply(my_name_list, FUN = most_popular_year) %>%
+  bind_rows()
+````
+
+#Excersise5-7
+```{r}
+
+top10 <- function(data) 
+{
+  data %>%
+    group_by(name) %>%
+    summarize(births = sum(n)) %>%
+    arrange(desc(births)) %>%
+    head(10)
+}
+
+top10(data = babynames)
+
+
+top_by_decade <- babynames %>%
+  mutate(decade = 10 * floor(year / 10)) %>%
+  group_by(decade) %>%
+  do(top10(data = .))
+
+top_by_decade
+
+
+top_by_decade[27,]
+```
+
+
+-------------------------------------------------------------------FOR CREDIT------------------------------------------------------
+Lab 9
+Revisit previous labs and/or projects, and identify a task you did where you could have used some combination of the tools you learned in this lab. Describe it on Slack in the #lab9 channel.
+In my previous group project 1, functions could have come handy:
+
+I was exploring how earnings differed across race.My x axis was year and my Y axis was weekly earnings per house hold. I displayed five geom_lines each whiched mapped color to race. This is what I did for that projec:
+
+```{r}
+#WHAT I ORGINIALLY HAD
+earnings_plot <- ggplot(earnings_data, aes(y=earnings, x= years)) + 
+  geom_line(size= 0.75, aes(y=All_Race, color= All_Race)) +
+  geom_line(size= 0.75, aes(y=All_Latino, color= All_Latino)) +
+  geom_line(size= 0.75, aes(y=All_Black, color= All_Black)) +
+  geom_line(size= 0.75, aes(y=All_White, color= White)) +
+  geom_line(size= 0.75, aes(y=All_White, color= White)) +
+
+#HOW I COULD HAVE IMPORVED MY CODE            
+
+Plot_Fun <function(data, y_entry , x_entry, point= 1) #NAME AND CREATE FUNCTION
+{
+races_list <- c(Latino,Black, White, Asian) # CREAT A VECTOR  
+data %>% ggplot(aes(y= y_entry, x= x_entry))+ geom_line(size= point, aes( y = lapply(race_list))) #IMPLMENT CODE
+}
+
+Plot_Fun(earnings_data, earnings, years, point = 0.75) #PLUG IN VALUES
+
+```

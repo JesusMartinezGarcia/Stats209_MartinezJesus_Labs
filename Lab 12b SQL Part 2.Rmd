@@ -1,0 +1,133 @@
+---
+title: "Lab 12b SQL Part 2"
+author: "Jesus Martinez"
+date: "5/19/2018"
+output: html_document
+---
+```{r}
+library(dbplyr)  ## Note the 'b'; this is not dplyr
+library(mdsr)    ## Package for our book
+library(RMySQL)  ## Standard R/SQL interface package
+db <- dbConnect_scidb("airlines")
+```
+
+```{sql, connection=db}
+SHOW TABLES;
+```
+```{sql, connection=db}
+DESCRIBE flights;
+```
+
+```{sql, connection=db}
+SELECT 
+count(*) AS N1,
+avg(dep_delay) AS avg_delay
+FROM flights
+
+```
+```{sql, connection=db}
+SELECT 
+  f.carrier,
+  c.name,
+  count(*) AS num_flights,
+  avg(dep_delay) as avg_delay
+FROM flights AS f
+LEFT JOIN carriers AS c ON f.carrier = c.carrier
+WHERE year = 2012 AND month = 6 AND day = 29
+GROUP BY carrier
+HAVING num_flights > 1000
+ORDER BY avg_delay ASC;
+```
+
+------------------------------------------------------------------------------
+```{r}
+library(dbplyr)  ## Note the 'b'; this is not dplyr
+library(mdsr)    ## Package for our book
+library(RMySQL)  ## Standard R/SQL interface package
+db <- dbConnect_scidb("imdb")
+```
+
+```{sql, connection=db}
+SHOW TABLES
+```
+
+```{sql, connection=db}
+SELECT * FROM title LIMIT 0,10
+```
+```{sql, connection=db}
+SELECT * FROM title WHERE title LIKE '%Orleans%' LIMIT 0, 10
+
+```
+
+
+```{sql, connection=db}
+SELECT * FROM name WHERE name_pcode_cf LIKE '%D1214%' LIMIT 0, 10
+```
+```{sql, connection=db}
+SELECT * FROM name WHERE name LIKE '%Davis, Viola%'
+  AND imdb_index = "I"
+LIMIT 0 , 5
+```
+```{sql, connection=db}
+SELECT * FROM cast_info 
+LIMIT 0 , 100
+```
+```{sql, connection=db}
+SELECT
+  ci.person_id, 
+  ci.movie_id,
+  ci.role_id,
+   n.name
+FROM cast_info as ci
+LEFT JOIN name as n ON n.id = ci.person_role_id
+WHERE ci.person_id = 2977372
+LIMIT 0, 20
+```
+
+```{sql, connection=db}
+SELECT * FROM char_name  LIMIT 0, 10
+```
+
+
+```{sql, connection=db}
+SELECT 
+  t.title,
+  cn.name
+FROM cast_info as ci
+LEFT JOIN name as n ON ci.person_id = n.id
+LEFT JOIN title as t ON ci.movie_id = t.id
+LEFT JOIN char_name as cn ON ci.person_role_id = cn.id
+WHERE ci.person_id = 2977372
+AND t.kind_id = 1
+LIMIT 0, 100
+```
+
+```{sql, connection=db}
+SELECT 
+  t.title,
+  cn.name
+FROM cast_info as ci
+LEFT JOIN name as n ON ci.person_id = n.id
+LEFT JOIN title as t ON ci.movie_id = t.id
+LEFT JOIN char_name as cn ON ci.person_role_id = cn.id
+WHERE ci.person_id = 2977372
+AND t.kind_id = 1
+LIMIT 0, 100
+```
+Find Viola Davis’s full filmography, in chronological order. Include each movie’s title, production_year, and the name of the character that she played.
+
+```{sql, connection=db}
+SELECT 
+  ci.person_id,
+  n.name,
+  t.title,
+  t.production_year,
+  cn.name
+FROM cast_info as ci
+LEFT JOIN name as n ON ci.person_id = n.id
+LEFT JOIN title as t ON ci.movie_id = t.id
+LEFT JOIN char_name as cn ON ci.person_role_id = cn.id
+WHERE ci.person_id = 2977372
+AND t.kind_id = 1
+LIMIT 0, 100
+```

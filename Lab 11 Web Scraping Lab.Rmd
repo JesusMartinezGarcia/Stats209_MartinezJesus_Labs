@@ -1,0 +1,166 @@
+---
+title: "Lab 11 Web Scraping Lab"
+author: "Jesus Martinez"
+date: "5/19/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(rvest)
+```
+```{r}
+url <- "http://www.boxofficemojo.com/alltime/weekends/"
+
+raw_html <- read_html(url)
+raw_html
+```
+```{r}
+tables <- raw_html %>% html_nodes("table")
+
+tables
+```
+```{r}
+box_office_table <- tables[[5]]
+box_office_table
+```
+```{r}
+box_office_data <- box_office_table %>% html_table(header = TRUE)
+head(box_office_data)
+```
+```{r}
+list_of_dfs <- lapply(tables, html_table, header= TRUE, fill= TRUE)
+lapply(list_of_dfs, dim)
+```
+```{r}
+names(box_office_data)
+```
+```{r}
+box_office_data1 <- box_office_data %>% 
+  rename(rank           = `Rank`,
+    title          = `Title (click to view)`,
+    studio         = `Studio`,
+    opening        = `Opening*`,
+    pct_of_total   = `% of Total`,
+    theaters       = `Theaters`,
+    average_gross  = `Avg.`,
+    total_gross    = `Total Gross^`,
+    date           = `Date**`)
+
+```
+
+```{r}
+head(box_office_data1)
+```
+```{r}
+main_plot <- box_office_data1 %>% ggplot(aes(x=date, y= opening)) + geom_point(aes(size=pct_of_total, color= pct_of_total)) + xlab("Opening Date") + ylab("Opening Day Gross")
+
+main_plot
+```
+
+```{r}
+
+box_office_data2 <- box_office_data1 %>% mutate(pct_of_total= parse_number(pct_of_total), opening = parse_number(opening), theaters = parse_number(theaters), average_gross = parse_number(average_gross), total_gross = parse_number(total_gross))
+
+```
+
+
+```{r}
+head(box_office_data2)
+```
+
+```{r}
+library(lubridate)
+```
+```{r}
+box_office_data2 <- box_office_data2 %>% mutate(date = mdy(date))
+
+```
+
+```{r}
+main_plot <- box_office_data2 %>% ggplot(aes(x=date, y= opening)) + geom_point(aes(size=pct_of_total, color= pct_of_total)) + xlab("Opening Date") + ylab("Opening Day Gross")
+
+main_plot
+```
+
+```{r}
+library(scales)
+```
+```{r}
+main_plot <- box_office_data2 %>% ggplot(aes(x=date, y= opening)) + geom_point(aes(size=pct_of_total, color= pct_of_total)) +
+  guides(color = guide_legend("Percent of Total"), 
+         size = guide_legend("Percent of Total")) +
+  scale_y_continuous("Opening day Box Office Gross",labels = dollar)+
+  xlab("Opening Date")
+
+main_plot
+```
+
+----Second Plot----
+```{r}
+url2 <- "https://www.the-numbers.com/box-office-records/domestic/all-movies/weekend/opening"
+
+raw_html2 <- read_html(url2)
+raw_html2
+```
+```{r}
+tables2 <- raw_html2 %>% html_nodes("table")
+
+glimpse(tables2)
+```
+```{r}
+box_office_table2 <- tables2[[2]]
+box_office_table2
+```
+```{r}
+box_office_data2 <- box_office_table2 %>% html_table(header = TRUE)
+head(box_office_data2)
+```
+```{r}
+names(box_office_data2)
+```
+```{r}
+
+box_office_data2 <- box_office_data2 %>% mutate(rank= parse_number(Rank), Gross= parse_number(Gross), Theaters = parse_number(Theaters), PerTheater = parse_number(PerTheater), TotalGross = parse_number(TotalGross), Week = parse_number(Week))
+
+new_box_office_data <- box_office_data2 %>% mutate(pct_total = Gross/TotalGross)
+new_box_office_data
+
+```
+
+```{r}
+new_box_office_data<- new_box_office_data %>% mutate(Date = mdy(Date))
+```
+
+```{r}
+names(new_box_office_data)
+```
+
+```{r}
+main_plot2 <- new_box_office_data %>% ggplot(aes(x=Date, y=Gross)) + geom_point(aes(size=pct_total, color= pct_total)) +
+  guides(color = guide_legend("Percent of Total"), 
+         size = guide_legend("Percent of Total")) +
+  scale_y_continuous("Opening day Box Office Gross",labels = dollar)+
+  xlab("Opening Date")
+
+main_plot2
+```
+
+
+
+```{r}
+main_plot3 <- new_box_office_data %>% filter(rank <= 10) %>% ggplot(aes(x=Date, y=Gross, label=Movie)) + geom_point() +
+  scale_colour_continuous(guide = FALSE)+
+  geom_text(aes(label=Movie))+
+  scale_y_continuous("Opening day Box Office Gross",labels = dollar)+
+  xlab("Opening Date")
+
+main_plot3
+```

@@ -1,0 +1,107 @@
+---
+title: "Lab 15 Text Data"
+author: "Jesus Martinez"
+date: "5/19/2018"
+output: html_document
+---
+
+```{r}
+macbeth_url <- "http://www.gutenberg.org/cache/epub/1129/pg1129.txt"
+macbeth_raw <- RCurl::getURL(macbeth_url)
+macbeth_lines <- strsplit(macbeth_raw, "\r\n")[[1]]
+```
+
+```{r}
+set.seed(42)
+## Lots of ways you could do this; here's one
+## Would also match, e.g., GRANNY MACBETH, if
+## such a character existed
+grep("^  [A-Z]* ?MACBETH.", macbeth_lines, value = TRUE) %>% 
+  sample(10)
+```
+
+```{r}
+line_numbers <-
+  grep("^  [A-Z ]+\\.", macbeth_lines)
+line_text <- macbeth_lines[line_numbers]
+data.frame(line_numbers, line_text) %>% head()
+```
+
+```{r}
+library(stringr)
+characters <- str_extract(line_text, "^  [A-Z ]+\\.")
+```
+
+```{r}
+spoken_text <- 
+  mapply(
+    FUN      = gsub, 
+    pattern  = characters,  ## vary the pattern= argument over elements of `characters`
+    x        = line_text,   ## vary the x= argument over elements of `line_text`
+    MoreArgs = list(replacement = "") ## hold the replacement= argument fixed
+    )
+head(spoken_text)
+```
+
+```{r}
+frame <- 
+  data.frame(
+    line = line_numbers, 
+    character = characters,
+    line_text = spoken_text)
+head(frame)
+```
+
+```{r}
+library(readr) # for parse_integer()
+character_stats <- frame %>%
+  group_by(character) %>%
+  summarize(
+    num_lines = n(),
+    prop_lines = n() / nrow(frame),
+    first_appearance = parse_integer(min(line)),
+    halfway_point = median(line),
+    last_appearance = parse_integer(max(line))) %>%
+  arrange(desc(num_lines))
+character_stats
+```
+
+```{r}
+character_stats <- character_stats %>%
+  mutate(
+    character = factor(character, levels = character))
+```
+
+```{r}
+
+low_freq_chars <- character_stats %>%
+  filter(prop_lines < 0.01) %>%
+  summarize(
+    character = "OTHERS",
+    num_lines = sum(num_lines),
+    prop_lines = sum(prop_lines),
+    first_appearance = parse_integer(min(first_appearance)),
+    halfway_point = NA,
+    last_appearance = parse_integer(max(last_appearance)))
+character_stats <- 
+  character_stats %>% 
+  filter(prop_lines >= 0.01) %>%
+  rbind(low_freq_chars)
+````
+
+```{r}
+character_stats %>% 
+  ggplot(aes(x = character, y = prop_lines)) +
+  geom_bar(stat = "identity")
+```
+
+```{r}
+library(tidyr)
+character_stats %>%
+  rename(first = first_appearance, middle = halfway_point, last = last_appearance) %>%
+  gather(key = label, value = line, first, middle, last) %>%
+  filter(character != "OTHERS") %>%
+  ggplot(aes(x = character, y = line, color = label, size = prop_lines)) +
+  geom_point() + 
+  coord_flip()
+```

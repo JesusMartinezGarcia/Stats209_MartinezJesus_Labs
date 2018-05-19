@@ -1,0 +1,82 @@
+---
+title: "Lab 14 Working with geospatial data"
+author: "Jesus Martinez"
+date: "5/19/2018"
+output: html_document
+---
+
+```{r}
+library(sf)
+```
+
+```{r}
+nc <- system.file("shape/nc.shp", package = "sf") %>%
+  st_read()
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+head(nc)
+```
+
+```{r}
+nc %>% select(AREA, NAME, geometry)
+```
+
+```{r}
+nc %>% select(AREA, geometry) %>% plot()
+```
+```{r}
+library(ggplot2)
+names(nc)
+```
+```{r}
+Data1<- nc %>% gather(
+    key = "year1",   
+    value = "Births1",
+    BIR74,BIR79)
+
+Data1 <- Data1 %>% gather(
+    key = "year2",   
+    value = "Births2",
+    SID74,SID79)
+```
+
+```{r}
+Data1 %>% ggplot(aes(fill=Births1)) + geom_sf()
+Data1 %>% ggplot(aes(fill=Births2)) + geom_sf()
+```
+
+
+```{r}
+library(macleish)
+```
+
+
+
+```{r}
+library(leaflet)
+```
+
+```{r}
+library(leaflet)
+## First create a dataset for the particular building
+bechtel <- data.frame(lat = 42.449167, lon = -72.679389)
+## Now create a plot, which we will add to
+base_plot <- leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng = ~lon, lat = ~lat, data = bechtel,
+             popup = "Bechtel Environmental Classroom")
+
+base_plot %>%
+  addPolygons(data = macleish_layers[["buildings"]], 
+              weight = 1, popup = "Buildings") %>%
+  addPolygons(data = macleish_layers[["forests"]], 
+              weight = 1, fillOpacity = 0.2, popup = ~ Sheet1__Na) %>%
+  addPolygons(data = macleish_layers[["streams"]], weight=1 , popup="Rivers") %>%
+  addPolygons(data = macleish_layers[["trails"]], weight=3, popup="trails")
+```
