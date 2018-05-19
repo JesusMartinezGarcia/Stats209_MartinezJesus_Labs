@@ -80,7 +80,7 @@ top_by_decade[27,]
 
 -------------------------------------------------------------------FOR CREDIT------------------------------------------------------
 Lab 9
-Revisit previous labs and/or projects, and identify a task you did where you could have used some combination of the tools you learned in this lab. Describe it on Slack in the #lab9 channel.
+**Revisit previous labs and/or projects, and identify a task you did where you could have used some combination of the tools you learned in this lab. Describe it on Slack in the #lab9 channel.
 In my previous group project 1, functions could have come handy:
 
 I was exploring how earnings differed across race.My x axis was year and my Y axis was weekly earnings per house hold. I displayed five geom_lines each whiched mapped color to race. This is what I did for that projec:
