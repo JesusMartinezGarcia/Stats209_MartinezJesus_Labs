@@ -87,7 +87,7 @@ character_stats <-
   character_stats %>% 
   filter(prop_lines >= 0.01) %>%
   rbind(low_freq_chars)
-````
+```
 
 ```{r}
 character_stats %>% 
